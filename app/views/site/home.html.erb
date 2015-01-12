@@ -65,6 +65,28 @@
       .text(function(d) { return d; });
   };
 
+// Second graph for array data, using nv to create a donut
+array2 = function array2 (data) {
+  nv.addGraph(function() {
+      var chart = nv.models.pieChart()
+      .x(function(d) { return d})
+      .y(function(d) { return d})
+      .showLabels(false)     //Display pie labels
+      .labelThreshold(.05)  //Configure the minimum slice size for labels to show up
+      .labelType("percent") //Configure what type of data to show in the label. Can be "key", "value" or "percent"
+      .donut(true)          //Turn on Donut mode. Makes pie chart look tasty!
+      .donutRatio(0.35)     //Configure how big you want the donut hole size to be.
+      ;
+
+      d3.select("#graph1-2 svg")
+      .datum(data)
+      .transition().duration(350)
+      .call(chart);
+
+      return chart;
+      });
+};
+
 
   // Using jquery's get https://api.jquery.com/jquery.get/ to
   // make a web request and get the data, with the data for
@@ -75,7 +97,7 @@
       // before redrawing we have to empty out or remove the old lines
       $('[id*="graph1"] svg').empty();
       array1(data);
-      //array2(data);
+      array2(data);
     });
     return arguments.callee;
   }();
