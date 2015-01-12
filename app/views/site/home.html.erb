@@ -1,19 +1,89 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.1.15-beta/nv.d3.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.1.15-beta/nv.d3.min.css"/>
+<style>
+.chart svg {
+  height: auto;
+}
+.chart rect {
+  fill: steelblue;
+}
+.chart text {
+  fill: white;
+  font: 10px sans-serif;
+  text-anchor: end;
+}
+#graph1-2 {
+  height: 400px;
+}
+</style>
 <h1>D3 Examples</h1>
 <p>Find me in <a href="https://github.com/hackershipco/rails-d3examples">
     app/views/site/home.html.erb</a></p>
-<p>The following are two examples of using d3 in a Rails project, it will get data 
+<p>The following are two examples of using d3 and <a href="http://nvd3.org/index.html">nv</a>
+  in a Rails project, it will get data
   asynchronously from the back end using jQuery and then create a graph with d3.</p>
-<p>Nothing fancy here, the server has two actions that return data, one site/array and 
+<p>I recommend using something like nv also to save time and build cooler graphs than by using d3
+  alone, which can be a little hard, do go and learn d3 tho, is important knowing what's up.</p>
+<p>Nothing fancy here, the server has two actions that return data, one site/array and
   site/json, as you might guess, they return an array and json respectively.</p>
 
 
 <h2>Data from /array</h2>
-<div id="graph1"></div>
+<button class='btn btn-primary getarray'>refresh Array</button>
+<div id="graph1-1" class='chart' ><svg></svg></div>
+<div id="graph1-2" class='' ><svg></svg></div>
+<div id="graph1-3" class='chart' ></div>
 <h2>Data from /json</h2>
-<div id="graph2"></div>
+<div id="graph2" class='chart' ></div>
 
 <script>
+  var getArray, array1, array2, array3, json1;
+
+
+  // First graph, with array result and bars
+  array1 = function array1 (data) {
+    var width = 420,
+        barHeight = 20;
+    var x = d3.scale.linear()
+      .domain([0, d3.max(data)])
+      .range([0, width]);
+    var chart = d3.select("#graph1-1 svg")
+      .attr("width", width)
+      .attr("height", barHeight * data.length);
+    var bar = chart.selectAll("g")
+      .data(data)
+      .enter().append("g")
+      .attr("transform", function(d, i) { return "translate(0," + i * barHeight + ")"; });
+    bar.append("rect")
+      .attr("width", x)
+      .attr("height", barHeight - 1);
+    bar.append("text")
+      .attr("x", function(d) { return x(d) - 3; })
+      .attr("y", barHeight / 2)
+      .attr("dy", ".35em")
+      .text(function(d) { return d; });
+  };
+
+
+  // Using jquery's get https://api.jquery.com/jquery.get/ to
+  // make a web request and get the data, with the data for
+  // array we'll draw three graphs,
+  // getArray is a function that holds the ajax call.
+  getArray = function getArray () {
+    $.get('/site/array').then(function (data) {
+      // before redrawing we have to empty out or remove the old lines
+      $('[id*="graph1"] svg').empty();
+      array1(data);
+      //array2(data);
+    });
+    return arguments.callee;
+  }();
+
+
+
+// Event listeners
+$('.getarray').click(getArray);
+//$('.getjson').click(getJson);
 
 </script>
