@@ -16,6 +16,14 @@
 #graph1-2 {
   height: 400px;
 }
+#graph2-2 {
+  height: 210px;
+  width: 500px;
+}
+#graph2-1 {
+  height: 310px;
+  width: 700px;
+}
 </style>
 <h1>D3 Examples</h1>
 <p>Find me in <a href="https://github.com/hackershipco/rails-d3examples">
@@ -33,12 +41,13 @@
 <button class='btn btn-primary getarray'>refresh Array</button>
 <div id="graph1-1" class='chart' ><svg></svg></div>
 <div id="graph1-2" class='' ><svg></svg></div>
-<div id="graph1-3" class='chart' ></div>
 <h2>Data from /json</h2>
-<div id="graph2" class='chart' ></div>
+<button class='btn btn-primary getjson'>refresh Json</button>
+<div id="graph2-1" class='' ><svg></svg></div>
+<div id="graph2-2" class='' ><svg></svg></div>
 
 <script>
-  var getArray, array1, array2, array3, json1;
+  var getArray, getJson, array1, array2, array3, json1;
 
 
   // First graph, with array result and bars
@@ -88,6 +97,70 @@ array2 = function array2 (data) {
 };
 
 
+// Grah of stacked areas http://nvd3.org/examples/stackedArea.html
+json1 = function json1 (data) {
+  nv.addGraph(function() {
+      var chart = nv.models.stackedAreaChart()
+      .margin({right: 100})
+      .x(function(d) { return d[0] })   //We can modify the data accessor functions...
+      .y(function(d) { return d[1] })   //...in case your data is formatted differently.
+      .useInteractiveGuideline(true)    //Tooltips which show all data points. Very nice!
+      .rightAlignYAxis(true)      //Let's move the y-axis to the right side.
+      .transitionDuration(500)
+      .showControls(true)       //Allow user to choose 'Stacked', 'Stream', 'Expanded' mode.
+      .clipEdge(true);
+
+      //Format x-axis labels with custom function.
+      chart.xAxis
+      .tickFormat(function(d) { 
+        return d3.time.format('%x')(new Date(d)) 
+        });
+
+      chart.yAxis
+      .tickFormat(d3.format(',.2f'));
+
+      d3.select('#graph2-1 svg')
+        .datum(data)
+        .call(chart);
+
+      nv.utils.windowResize(chart.update);
+
+      return chart;
+  });
+};
+
+// graphs of lines http://nvd3.org/examples/line.html
+// data should be like: [{ values: [0..10],key: 'label',color: '#2ca02c'}]
+json2 = function json2 (data) {
+  //data = [{ values: data, key: 'Important Data', color: '#2ca02c'}];
+  nv.addGraph(function() {
+      var chart = nv.models.lineChart()
+      .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
+      .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
+      .transitionDuration(350)  //how fast do you want the lines to transition?
+      .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+      .showYAxis(true)        //Show the y-axis
+      .showXAxis(true)        //Show the x-axis
+      ;
+
+      chart.xAxis     //Chart x-axis settings
+      .axisLabel('Time (ms)')
+      .tickFormat(d3.format(',r'));
+
+      chart.yAxis     //Chart y-axis settings
+      .axisLabel('Voltage (v)')
+      .tickFormat(d3.format('.02f'));
+
+      /* Done setting the chart up? Time to render it!*/
+      d3.select('#graph2-2 svg')    //Select the <svg> element you want to render the chart in.   
+        .datum(data)         //Populate the <svg> element with chart data...
+        .call(chart);          //Finally, render the chart!
+      return chart;
+  });
+
+};
+
+
   // Using jquery's get https://api.jquery.com/jquery.get/ to
   // make a web request and get the data, with the data for
   // array we'll draw three graphs,
@@ -102,10 +175,21 @@ array2 = function array2 (data) {
     return arguments.callee;
   }();
 
+  getJson = function getArray () {
+    // before redrawing we have to empty out or remove the old lines
+    $('[id*="graph2"] svg').empty();
+    $.get('/site/json').then(function (data) {
+      json2(data);
+    });
+    $.get('/site/json2').then(function (data) {
+      json1(data);
+    });
+    return arguments.callee;
+  }();
 
 
 // Event listeners
 $('.getarray').click(getArray);
-//$('.getjson').click(getJson);
+$('.getjson').click(getJson);
 
 </script>
